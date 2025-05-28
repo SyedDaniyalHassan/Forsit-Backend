@@ -1,6 +1,6 @@
 # Ecommerce Admin API
 
-A RESTful API for managing an e-commerce platform's administrative functions, built with FastAPI and MySQL.
+A robust RESTful API for managing an e-commerce platform's administrative functions, built with FastAPI and MySQL.
 
 ## Technology Stack
 
@@ -10,6 +10,7 @@ A RESTful API for managing an e-commerce platform's administrative functions, bu
 - **Database**: MySQL 8.0
 - **ORM**: SQLAlchemy
 - **Package Manager**: Poetry
+- **Monitoring**: Prometheus & Grafana
 
 ## Setup Instructions
 
@@ -45,13 +46,93 @@ API documentation is available at `http://localhost:8000/api/docs`
 
 ## Database Schema
 
-The application uses MySQL with the following main tables:
-- Products
-- Categories
-- Inventory
-- Sales
-- Sales_Details
-The Default scripts for dummy data is Ecommerce_Admin_API\db\init.sql (Tables can be created by starting the Application)
+### Tables and Relationships
+
+#### Categories
+- Primary table for product categories
+- Fields:
+  - `id`: Primary key
+  - `name`: Category name
+  - `description`: Category description
+  - `created_at`: Timestamp
+  - `updated_at`: Timestamp
+
+#### Products
+- Stores product information
+- Fields:
+  - `id`: Primary key
+  - `name`: Product name
+  - `description`: Product description
+  - `price`: Product price
+  - `category_id`: Foreign key to Categories
+  - `created_at`: Timestamp
+  - `updated_at`: Timestamp
+- Relationships:
+  - Belongs to one Category
+  - Has one Inventory record
+  - Has many SalesDetails
+
+#### Inventory
+- Tracks product stock levels
+- Fields:
+  - `id`: Primary key
+  - `product_id`: Foreign key to Products
+  - `quantity`: Current stock quantity
+  - `low_stock_threshold`: Threshold for low stock alerts
+  - `created_at`: Timestamp
+  - `updated_at`: Timestamp
+- Relationships:
+  - Belongs to one Product
+
+#### Sales
+- Records sales transactions
+- Fields:
+  - `id`: Primary key
+  - `sale_date`: Date and time of sale
+  - `total_amount`: Total sale amount
+  - `created_at`: Timestamp
+  - `updated_at`: Timestamp
+- Relationships:
+  - Has many SalesDetails
+
+#### SalesDetails
+- Stores individual items in a sale
+- Fields:
+  - `id`: Primary key
+  - `sale_id`: Foreign key to Sales
+  - `product_id`: Foreign key to Products
+  - `quantity`: Quantity sold
+  - `unit_price`: Price per unit at time of sale
+  - `total_price`: Total price for this item
+  - `created_at`: Timestamp
+  - `updated_at`: Timestamp
+- Relationships:
+  - Belongs to one Sale
+  - Belongs to one Product
+
+### Entity Relationship Diagram
+```
+Categories 1──┐
+              │
+              ▼
+Products 1────┼────1 Inventory
+              │
+              ▼
+Sales 1───────┼─────* SalesDetails
+```
+
+## Monitoring
+
+The application includes Prometheus and Grafana for monitoring:
+
+1. **Prometheus**:
+   - Collects metrics from the FastAPI application
+   - Available at http://localhost:9090
+
+2. **Grafana**:
+   - Visualizes metrics and provides dashboards
+   - Available at http://localhost:3000
+   - Default credentials: admin/admin
 
 ## Development
 
