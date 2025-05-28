@@ -2,6 +2,9 @@
 
 A robust RESTful API for managing an e-commerce platform's administrative functions, built with FastAPI and MySQL.
 
+## Code Repo URL 
+https://github.com/SyedDaniyalHassan/Forsit-Backend.git
+
 ## Technology Stack
 
 - **Programming Language**: Python 3.12
@@ -47,6 +50,8 @@ API documentation is available at `http://localhost:8000/api/docs`
 ## Database Schema
 
 ### Tables and Relationships
+
+The Scipts for dummy data are the "Ecommerce_Admin_API\db\init.sql"
 
 #### Categories
 - Primary table for product categories
