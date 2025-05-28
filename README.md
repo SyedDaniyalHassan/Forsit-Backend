@@ -1,126 +1,65 @@
-# Ecommerce_Admin_API
-The project is the backend task by the Forsit
-## Poetry
+# Ecommerce Admin API
 
-This project uses poetry. It's a modern dependency management
-tool.
+A RESTful API for managing an e-commerce platform's administrative functions, built with FastAPI and MySQL.
 
-To run the project use this set of commands:
+## Technology Stack
 
+- **Programming Language**: Python 3.12
+- **Framework**: FastAPI
+- **API Type**: RESTful
+- **Database**: MySQL 8.0
+- **ORM**: SQLAlchemy
+- **Package Manager**: Poetry
+
+## Setup Instructions
+
+1. **Install Poetry** (if not already installed):
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+2. **Install Dependencies**:
 ```bash
 poetry install
-poetry run python -m Ecommerce_Admin_API
 ```
 
-This will start the server on the configured host.
-
-You can find swagger documentation at `/api/docs`.
-
-## Docker
-
-You can start the project with docker using this command:
-
+3. **Configure Environment Variables**:
+Create a `.env` file in the root directory with the following variables:
 ```bash
-docker-compose up --build
+ECOMMERCE_ADMIN_API_ENVIRONMENT=development
+ECOMMERCE_ADMIN_API_DB_HOST=localhost
+ECOMMERCE_ADMIN_API_DB_PORT=3306
+ECOMMERCE_ADMIN_API_DB_USER=your_username
+ECOMMERCE_ADMIN_API_DB_PASS=your_password
+ECOMMERCE_ADMIN_API_DB_BASE=your_database
 ```
 
-If you want to develop in docker with autoreload and exposed ports add `-f deploy/docker-compose.dev.yml` to your docker command.
-Like this:
-
+4. **Run the Application**:
 ```bash
-docker-compose -f docker-compose.yml -f deploy/docker-compose.dev.yml --project-directory . up --build
+poetry run uvicorn Ecommerce_Admin_API.web.application:get_app --reload
 ```
 
-This command exposes the web application on port 8000, mounts current directory and enables autoreload.
-
-But you have to rebuild image every time you modify `poetry.lock` or `pyproject.toml` with this command:
-
-```bash
-docker-compose build
-```
-
-## Project structure
-
-```bash
-$ tree "Ecommerce_Admin_API"
-Ecommerce_Admin_API
-├── conftest.py  # Fixtures for all tests.
-├── db  # module contains db configurations
-│   ├── dao  # Data Access Objects. Contains different classes to interact with database.
-│   └── models  # Package contains different models for ORMs.
-├── __main__.py  # Startup script. Starts uvicorn.
-├── services  # Package for different external services such as rabbit or redis etc.
-├── settings.py  # Main configuration settings for project.
-├── static  # Static content.
-├── tests  # Tests for project.
-└── web  # Package contains web server. Handlers, startup config.
-    ├── api  # Package with all handlers.
-    │   └── router.py  # Main router.
-    ├── application.py  # FastAPI application configuration.
-    └── lifespan.py  # Contains actions to perform on startup and shutdown.
-```
-
-## Configuration
-
-This application can be configured with environment variables.
-
-You can create `.env` file in the root directory and place all
-environment variables here. 
-
-All environment variables should start with "ECOMMERCE_ADMIN_API_" prefix.
-
-For example if you see in your "Ecommerce_Admin_API/settings.py" a variable named like
-`random_parameter`, you should provide the "ECOMMERCE_ADMIN_API_RANDOM_PARAMETER" 
-variable to configure the value. This behaviour can be changed by overriding `env_prefix` property
-in `Ecommerce_Admin_API.settings.Settings.Config`.
-
-An example of .env file:
-```bash
-ECOMMERCE_ADMIN_API_RELOAD="True"
-ECOMMERCE_ADMIN_API_PORT="8000"
-ECOMMERCE_ADMIN_API_ENVIRONMENT="dev"
-```
-
-You can read more about BaseSettings class here: https://pydantic-docs.helpmanual.io/usage/settings/
-
-## Pre-commit
-
-To install pre-commit simply run inside the shell:
-```bash
-pre-commit install
-```
-
-pre-commit is very useful to check your code before publishing it.
-It's configured using .pre-commit-config.yaml file.
-
-By default it runs:
-* black (formats your code);
-* mypy (validates types);
-* ruff (spots possible bugs);
+The API will be available at `http://localhost:8000`
+API documentation is available at `http://localhost:8000/api/docs`
 
 
-You can read more about pre-commit here: https://pre-commit.com/
+## Database Schema
 
+The application uses MySQL with the following main tables:
+- Products
+- Categories
+- Inventory
+- Sales
+- Sales_Details
+The Default scripts for dummy data is Ecommerce_Admin_API\db\init.sql (Tables can be created by starting the Application)
 
-## Running tests
+## Development
 
-If you want to run it in docker, simply run:
-
-```bash
-docker-compose run --build --rm api pytest -vv .
-docker-compose down
-```
-
-For running tests on your local machine.
-1. you need to start a database.
-
-I prefer doing it with docker:
-```
-docker run -p "3306:3306" -e "MYSQL_PASSWORD=Ecommerce_Admin_API" -e "MYSQL_USER=Ecommerce_Admin_API" -e "MYSQL_DATABASE=Ecommerce_Admin_API" -e ALLOW_EMPTY_PASSWORD=yes mysql:8.4
-```
-
-
-2. Run the pytest.
-```bash
-pytest -vv .
-```
+For development, the application includes:
+- Hot reload enabled
+- Interactive API documentation (Swagger UI)
+- Automatic request validation
+- Database migrations support
+- Type checking with mypy
+- Code formatting with black
+- Linting with ruff
