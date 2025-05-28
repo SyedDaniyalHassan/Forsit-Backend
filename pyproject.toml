@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "Ecommerce_Admin_API"
 version = "0.1.0"
-description = ""
+description = "Forsit Ecommerce Backend Task"
 authors = [
-
+    "Syed Daniyal Hassan"
 ]
 maintainers = [
 

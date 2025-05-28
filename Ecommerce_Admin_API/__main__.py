@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 
 import uvicorn
-
 from settings import settings
 
 

@@ -1,7 +1,5 @@
 # Ecommerce_Admin_API
-
-This project was generated using fastapi_template.
-
+The project is the backend task by the Forsit
 ## Poetry
 
 This project uses poetry. It's a modern dependency management
@@ -17,8 +15,6 @@ poetry run python -m Ecommerce_Admin_API
 This will start the server on the configured host.
 
 You can find swagger documentation at `/api/docs`.
-
-You can read more about poetry here: https://python-poetry.org/
 
 ## Docker
 

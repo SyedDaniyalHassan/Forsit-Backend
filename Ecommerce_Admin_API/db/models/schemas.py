@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -103,4 +104,4 @@ class SalesAnalyticsResponse(BaseModel):
     start_date: datetime
     end_date: datetime
     sales_by_category: dict[str, float]
-    sales_by_product: dict[str, float] 
+    sales_by_product: dict[str, float]

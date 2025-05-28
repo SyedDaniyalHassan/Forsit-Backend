@@ -2,18 +2,18 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from Ecommerce_Admin_API.db.dependencies import get_db_session
-from Ecommerce_Admin_API.db.models.sales import Sales, SalesDetail, Inventory
-from Ecommerce_Admin_API.db.models.product import Product, Category
+from Ecommerce_Admin_API.db.models.product import Category, Product
+from Ecommerce_Admin_API.db.models.sales import Inventory, Sales, SalesDetail
 from Ecommerce_Admin_API.db.models.schemas import (
+    DateRangeFilter,
+    SalesAnalyticsResponse,
     SalesCreate,
     SalesResponse,
-    SalesAnalyticsResponse,
-    DateRangeFilter,
 )
 
 router = APIRouter()
@@ -58,12 +58,14 @@ async def create_sale(
 
         # Update sale total
         sale.total_amount = total_amount
-        
+
         # Load all relationships before returning
         query = (
             select(Sales)
             .options(
-                joinedload(Sales.details).joinedload(SalesDetail.product).joinedload(Product.category)
+                joinedload(Sales.details)
+                .joinedload(SalesDetail.product)
+                .joinedload(Product.category),
             )
             .where(Sales.id == sale.id)
         )
@@ -78,17 +80,16 @@ async def get_sales(
     session: AsyncSession = Depends(get_db_session),
 ):
     """Get sales with optional date filtering."""
-    query = (
-        select(Sales)
-        .options(
-            joinedload(Sales.details).joinedload(SalesDetail.product).joinedload(Product.category)
-        )
+    query = select(Sales).options(
+        joinedload(Sales.details)
+        .joinedload(SalesDetail.product)
+        .joinedload(Product.category),
     )
     if start_date:
         query = query.where(Sales.sale_date >= start_date)
     if end_date:
         query = query.where(Sales.sale_date <= end_date)
-    
+
     result = await session.execute(query)
     return result.unique().scalars().all()
 
@@ -105,7 +106,7 @@ async def get_sales_analytics(
         and_(
             Sales.sale_date >= date_filter.start_date,
             Sales.sale_date <= date_filter.end_date,
-        )
+        ),
     )
 
     # Get total sales and orders
@@ -113,45 +114,48 @@ async def get_sales_analytics(
         func.sum(Sales.total_amount).label("total_sales"),
         func.count(Sales.id).label("total_orders"),
     ).select_from(base_query.subquery())
-    
+
     total_result = await session.execute(total_sales_query)
     total_data = total_result.first()
-    
+
     # Get sales by category
-    category_sales_query = select(
-        Category.name,
-        func.sum(SalesDetail.total_price).label("total"),
-    ).join(
-        Product, Category.id == Product.category_id
-    ).join(
-        SalesDetail, Product.id == SalesDetail.product_id
-    ).join(
-        Sales, SalesDetail.sale_id == Sales.id
-    ).where(
-        and_(
-            Sales.sale_date >= date_filter.start_date,
-            Sales.sale_date <= date_filter.end_date,
+    category_sales_query = (
+        select(
+            Category.name,
+            func.sum(SalesDetail.total_price).label("total"),
         )
-    ).group_by(Category.name)
-    
+        .join(Product, Category.id == Product.category_id)
+        .join(SalesDetail, Product.id == SalesDetail.product_id)
+        .join(Sales, SalesDetail.sale_id == Sales.id)
+        .where(
+            and_(
+                Sales.sale_date >= date_filter.start_date,
+                Sales.sale_date <= date_filter.end_date,
+            ),
+        )
+        .group_by(Category.name)
+    )
+
     category_result = await session.execute(category_sales_query)
     sales_by_category = {row[0]: row[1] for row in category_result}
 
     # Get sales by product
-    product_sales_query = select(
-        Product.name,
-        func.sum(SalesDetail.total_price).label("total"),
-    ).join(
-        SalesDetail, Product.id == SalesDetail.product_id
-    ).join(
-        Sales, SalesDetail.sale_id == Sales.id
-    ).where(
-        and_(
-            Sales.sale_date >= date_filter.start_date,
-            Sales.sale_date <= date_filter.end_date,
+    product_sales_query = (
+        select(
+            Product.name,
+            func.sum(SalesDetail.total_price).label("total"),
         )
-    ).group_by(Product.name)
-    
+        .join(SalesDetail, Product.id == SalesDetail.product_id)
+        .join(Sales, SalesDetail.sale_id == Sales.id)
+        .where(
+            and_(
+                Sales.sale_date >= date_filter.start_date,
+                Sales.sale_date <= date_filter.end_date,
+            ),
+        )
+        .group_by(Product.name)
+    )
+
     product_result = await session.execute(product_sales_query)
     sales_by_product = {row[0]: row[1] for row in product_result}
 
@@ -166,4 +170,4 @@ async def get_sales_analytics(
         end_date=date_filter.end_date,
         sales_by_category=sales_by_category,
         sales_by_product=sales_by_product,
-    ) 
+    )
